@@ -1,48 +1,34 @@
-import { useEffect, useState } from "react";
+// Projects.jsx
+import { useEffect, useRef, useState } from "react";
 import { assets, projectsData } from "../assets/assets";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
+import useEmblaCarousel from "embla-carousel-react";
 
 const Projects = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [cardsToShow, setCardsToShow] = useState(1);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
-  const cardWidthPercent = 100 / cardsToShow;
-  const translateXPercent = currentIndex * cardWidthPercent;
+  const onSelect = () => {
+    if (!emblaApi) return;
+    setCanScrollPrev(emblaApi.canScrollPrev());
+    setCanScrollNext(emblaApi.canScrollNext());
+  };
 
   useEffect(() => {
-    const updateCardsToShow = () => {
-      if (window.innerHeight >= 1024) {
-        setCardsToShow(projectsData.length);
-      } else {
-        setCardsToShow(1);
-        setCurrentIndex(0);
-      }
-    };
-    updateCardsToShow();
-    window.addEventListener("resize", updateCardsToShow);
-    return () => window.removeEventListener("resize", updateCardsToShow);
-  }, []);
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+  }, [emblaApi]);
 
-  const prevProject = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prevIndex) => prevIndex - 1);
-    }
-  };
-
-  const nextProject = () => {
-    if (currentIndex < projectsData.length - cardsToShow) {
-      setCurrentIndex((nextIndex) => nextIndex + 1);
-    }
-  };
+  const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
+  const scrollNext = () => emblaApi && emblaApi.scrollNext();
 
   return (
     <motion.div
-      initial={{
-        opacity: 0,
-        x: -200,
-      }}
-      transition={{ duration: 1 }}
+      initial={{ opacity: 0, x: -200 }}
       whileInView={{ opacity: 1, x: 0 }}
+      transition={{ duration: 1 }}
       viewport={{ once: true }}
       className="container mx-auto py-4 pt-20 px-6 md:px-20 lg:px-32 my-20 w-full overflow-hidden"
       id="Projects"
@@ -54,36 +40,36 @@ const Projects = () => {
         </span>
       </h1>
       <p className="text-center text-gray-500 mb-8 max-w-80 mx-auto">
-        Crafting Spaces, Building Legacies-Explore Our Portfolio
+        Crafting Spaces, Building Legacies — Explore Our Portfolio
       </p>
 
       <div className="flex justify-end items-center mb-8">
         <button
-          onClick={prevProject}
-          className="p-3 bg-gray-200 cursor-pointer rounded mr-2"
+          onClick={scrollPrev}
+          disabled={!canScrollPrev}
+          className="p-3 bg-gray-200 cursor-pointer rounded mr-2 disabled:opacity-50"
           aria-label="Previous Project"
         >
           <img src={assets.left_arrow} alt="Previous" />
         </button>
         <button
-          onClick={nextProject}
-          className="p-3 bg-gray-200 cursor-pointer rounded mr-2"
+          onClick={scrollNext}
+          disabled={!canScrollNext}
+          className="p-3 bg-gray-200 cursor-pointer rounded mr-2 disabled:opacity-50"
           aria-label="Next Project"
         >
           <img src={assets.right_arrow} alt="Next" />
         </button>
       </div>
 
-      <div className="overflow-hidden">
-        <div
-          className="flex gap-8 transition-transform duration-500 ease-in-out"
-          style={{
-            transform: `translateX(${-translateXPercent}%)`,
-          }}
-        >
+      <div className="overflow-hidden embla max-w-screen-xl mx-auto" ref={emblaRef}>
+        <div className="flex gap-8 embla__container">
           {projectsData.map((project, index) => (
-            <div key={index} className="relative flex-shrink-0 w-full sm:w-1/4">
-              <img src={project.image} alt={project.title} srcSet="" />
+            <div
+              key={index}
+              className="relative embla__slide flex-shrink-0 w-full sm:w-1/2 lg:w-1/3"
+            >
+              <img src={project.image} alt={project.title} />
               <div className="absolute left-0 right-0 bottom-5 flex justify-center">
                 <div className="inline-block bg-white w-[80%] px-4 py-2 shadow-md">
                   <h2 className="text-xl font-semibold text-gray-800">
