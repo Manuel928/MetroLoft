@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 
 const Navbar = () => {
@@ -55,7 +55,7 @@ const Navbar = () => {
         <div className="flex justify-end p-6 cursor-pointer">
           <img
             src={assets.cross_icon}
-            className="w-6"
+            className="w-5"
             alt=""
             srcSet=""
             onClick={() => setShowMobileMenu(false)}
